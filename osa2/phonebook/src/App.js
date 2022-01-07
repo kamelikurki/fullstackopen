@@ -82,9 +82,9 @@ const App = () => {
       .getAll()
       .then(response => {
         setPersons(response.data)
-        if(persons.length !== 0 )
+        if(response.data.length !== 0 )
         {
-          setNextID(persons.at(-1).id + 1)
+          setNextID(response.data.at(-1).id + 1)
         }     
       })
   }
@@ -128,7 +128,7 @@ const App = () => {
         })
         .catch(error => {
           
-          if(error.response.status == 404)
+          if(error.response.status === 404)
           {
             setPersons(persons.filter(p => p.id !== currentID))     
             setErrorMessage(`Failed to update number for ${newName}. The entry has been deleted elsewhere.`)
@@ -193,7 +193,7 @@ const App = () => {
         }))
         .catch(error => {
           
-          if(error.response.status == 404)
+          if(error.response.status === 404)
           {
             setErrorMessage(`${name} already deleted`)
             setPersons(persons.filter(p => p.id !== id))     
