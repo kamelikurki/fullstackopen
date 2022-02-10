@@ -26,26 +26,24 @@ const Error = ({ message }) => {
   )
 }
 
-const Filter = ({newFilter, handleNewFilter}) =>
-{
+const Filter = ({ newFilter, handleNewFilter }) => {
   return (
-  <form>
-    <div>
-      Filter shown with: <input value={newFilter} onChange={handleNewFilter}/>
-    </div>
-  </form>
+    <form>
+      <div>
+        Filter shown with: <input value={newFilter} onChange={handleNewFilter} />
+      </div>
+    </form>
   )
 }
 
-const PersonsForm = ({addNumber, handleNewName, handleNewNumber,newNumber, newName}) =>
-{
+const PersonsForm = ({ addNumber, handleNewName, handleNewNumber, newNumber, newName }) => {
   return (
     <form onSubmit={addNumber}>
       <div>
-        name: <input value={newName} onChange={handleNewName}/>
+        name: <input value={newName} onChange={handleNewName} />
       </div>
       <div>
-        number: <input value={newNumber} onChange={handleNewNumber}/>
+        number: <input value={newNumber} onChange={handleNewNumber} />
       </div>
       <div>
         <button type="submit">add</button>
@@ -54,41 +52,38 @@ const PersonsForm = ({addNumber, handleNewName, handleNewNumber,newNumber, newNa
   )
 }
 
-const Persons = ({personsToShow, deleteHandler}) => 
-{
-  return(
-  personsToShow.map(person => 
-    <PersonView key={person.id} name={person.name} number={person.number} id={person.id} deleteHandler={deleteHandler}/>
-  )
+const Persons = ({ personsToShow, deleteHandler }) => {
+  return (
+    personsToShow.map(person =>
+      <PersonView key={person._id} name={person.Name} number={person.Number} id={person._id} deleteHandler={deleteHandler} />
+    )
   )
 }
 
-const PersonView = ({name,number,id, deleteHandler}) => 
-{
-  return ( <p> {name} {number} <button onClick={() => deleteHandler(id, name)}>delete</button> </p> )
+const PersonView = ({ name, number, id, deleteHandler }) => {
+  return (<p> {name} {number} <button onClick={() => deleteHandler(id, name)}>delete</button> </p>)
 }
 
 const App = () => {
-  const [persons, setPersons] = useState([]) 
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
   const [notificationMessage, setNotificationMessage] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
-  const [nextID, setNextID]  = useState(0)
+  const [nextID, setNextID] = useState(0)
 
   const hook = () => {
     personService
       .getAll()
       .then(response => {
         setPersons(response.data)
-        if(response.data.length !== 0 )
-        {
-          setNextID(response.data.at(-1).id + 1)
-        }     
+        if (response.data.length !== 0) {
+          setNextID(response.data.at(-1)._id + 1)
+        }
       })
   }
-  
+
   useEffect(hook, [])
 
   const addNumber = (event) => {
@@ -103,65 +98,60 @@ const App = () => {
     let currentID = -1
 
     let duplicate = false
-    persons.forEach(function(item, index, array) {
-      if(item.name === numberObject.name) 
-      {
+    persons.forEach(function (item, index, array) {
+      if (item.Name === numberObject.name) {
         duplicate = true
-        currentID = item.id
+        currentID = item._id
       }
     })
 
-    if(duplicate)
-    {
-      if(window.confirm(`${newName} is already added to phonebook, replace the old number with the new one?`))
-      {
+    if (duplicate) {
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number with the new one?`)) {
         personService
-        .update(currentID, numberObject)
+          .update(currentID, numberObject)
+          .then(response => {
+            setPersons(persons.map(person => person._id !== currentID ? person : response.data))
+            setNewName('')
+            setNewNumber('')
+            setNotificationMessage(`Updated number for ${newName}`)
+            setTimeout(() => {
+              setNotificationMessage(null)
+            }, 5000)
+          })
+          .catch(error => {
+
+            if (error.response.status === 404) {
+              setPersons(persons.filter(p => p._id !== currentID))
+              setErrorMessage(`Failed to update number for ${newName}. The entry has been deleted elsewhere.`)
+            }
+            else {
+              setErrorMessage(`Failed to update number for ${newName}`)
+            }
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
+          })
+      }
+    }
+    else {
+      personService
+        .create(numberObject)
         .then(response => {
-          setPersons(persons.map(person => person.id !== currentID ? person : response.data))
+          setPersons(persons.concat(response.data))
           setNewName('')
           setNewNumber('')
-          setNotificationMessage(`Updated number for ${newName}`)
+          setNotificationMessage(`Added ${newName}`)
           setTimeout(() => {
             setNotificationMessage(null)
           }, 5000)
         })
         .catch(error => {
-          
-          if(error.response.status === 404)
-          {
-            setPersons(persons.filter(p => p.id !== currentID))     
-            setErrorMessage(`Failed to update number for ${newName}. The entry has been deleted elsewhere.`)
-          }
-          else
-          {
-            setErrorMessage(`Failed to update number for ${newName}`)
-          }
+          setErrorMessage(error.response.data["error"])
+          //setErrorMessage(`Failed to add ${newName}`)
           setTimeout(() => {
             setErrorMessage(null)
           }, 5000)
         })
-      }
-    }
-    else
-    {
-      personService
-      .create(numberObject)
-      .then(response => {
-        setPersons(persons.concat(response.data))
-        setNewName('')
-        setNewNumber('')
-        setNotificationMessage(`Added ${newName}`)
-        setTimeout(() => {
-          setNotificationMessage(null)
-        }, 5000)
-      })        
-      .catch(error => {
-        setErrorMessage(`Failed to add ${newName}`)
-        setTimeout(() => {
-          setErrorMessage(null)
-        }, 5000)
-      })
 
     }
   }
@@ -178,11 +168,9 @@ const App = () => {
     setNewFilter(event.target.value)
   }
 
-  const handleDelete = (id, name) => 
-  {
-    if(window.confirm(`Really delete ${name}?`))
-    {
-      personService.deleteEntry(id).then(response =>     personService
+  const handleDelete = (id, name) => {
+    if (window.confirm(`Really delete ${name}?`)) {
+      personService.deleteEntry(id).then(response => personService
         .getAll()
         .then(response => {
           setPersons(response.data)
@@ -192,14 +180,12 @@ const App = () => {
           }, 5000)
         }))
         .catch(error => {
-          
-          if(error.response.status === 404)
-          {
+
+          if (error.response.status === 404) {
             setErrorMessage(`${name} already deleted`)
-            setPersons(persons.filter(p => p.id !== id))     
+            setPersons(persons.filter(p => p._id !== id))
           }
-          else
-          {
+          else {
             setErrorMessage(`Failed to delete ${name}`)
           }
           setTimeout(() => {
@@ -209,7 +195,9 @@ const App = () => {
     }
   }
 
-  const personsToShow = persons.filter(person => person.name.toLowerCase().includes(newFilter.toLowerCase()))
+  const personsToShow = persons.filter((person) => {
+    return person["Name"].toLowerCase().includes(newFilter.toLowerCase())
+  })
 
   return (
     <div>
@@ -223,7 +211,6 @@ const App = () => {
       <Persons personsToShow={personsToShow} deleteHandler={handleDelete} />
     </div>
   )
-
 }
 
 export default App
