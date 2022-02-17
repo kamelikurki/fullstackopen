@@ -205,14 +205,12 @@ test.only('Likes on a blog can be updated', async () => {
 
 
   const initialBlogs = await Blog.find({})
-  console.log(initialBlogs[0])
+
   const blogToUpdate = initialBlogs[0]
 
   const initialLikes = initialBlogs[0].likes
 
   blogToUpdate.likes  =  blogToUpdate.likes + 1
-
-  console.log(blogToUpdate)
 
   await api
     .put(`/api/blogs/${blogToUpdate.id}`)
