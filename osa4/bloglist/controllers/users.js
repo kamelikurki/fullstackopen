@@ -31,8 +31,6 @@ usersRouter.post('/', async (request, response) => {
     })
   }
 
-
-
   const saltRounds = 10
   const passwordHash = await bcrypt.hash(password, saltRounds)
 
@@ -50,7 +48,7 @@ usersRouter.post('/', async (request, response) => {
 
 usersRouter.get('/', async (request,response) => {
 
-  const allUsers = await User.find({})
+  const allUsers = await User.find({}).populate('blogs', {title: 1, author: 1, likes: 1, id:1})
 
   response.json(allUsers)
 

@@ -175,6 +175,5 @@ test('Likes on a blog can be updated', async () => {
 
 
 afterAll(() => {
-  console.log('closing')
   mongoose.connection.close()
 })

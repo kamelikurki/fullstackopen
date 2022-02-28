@@ -10,9 +10,11 @@ const mongoose = require('mongoose')
 const middleware = require('./utils/middleware')
 const logger = require('./utils/logger')
 const config = require('./utils/config')
+const loginRouter = require('./controllers/login')
 
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
+app.use('/api/login', loginRouter)
 
 logger.info('connecting to', config.MONGODB_URI)
 

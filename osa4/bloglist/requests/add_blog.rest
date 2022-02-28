@@ -1,9 +1,10 @@
-POST http://localhost:3003/api/blogs
+POST http://localhost:3002/api/blogs
 Content-Type: application/json
 
 {
-  "title": "Testiblogi",
-  "author": "Testi Testi",
+  "title": "Testiblogi3",
+  "author": "Testi Testi3",
   "url": "www.testi.fi",
-  "likes": 0
+  "likes": 0,
+  "userId": "620f871a62a51822499990b7"
 }

@@ -12,7 +12,20 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 
+const tokenExtractor = (request, response, next) => {
+  // tokenin ekstraktoiva koodi
+
+  response.token = ''
+  const authorization = request.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    response.token =  authorization.substring(7)
+  }
+  
+  next()
+}
+
 module.exports = 
 {
-  errorHandler
+  errorHandler,
+  tokenExtractor
 }
