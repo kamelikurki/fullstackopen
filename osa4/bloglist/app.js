@@ -11,8 +11,8 @@ const middleware = require('./utils/middleware')
 const logger = require('./utils/logger')
 const config = require('./utils/config')
 const loginRouter = require('./controllers/login')
-
-app.use('/api/blogs', blogsRouter)
+app.use(middleware.tokenExtractor)
+app.use('/api/blogs', middleware.userExtractor, blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 

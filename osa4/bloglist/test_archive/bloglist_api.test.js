@@ -2,13 +2,27 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
+//const User = require('../models/user')
 const api = supertest(app)
 const helper = require('./test_helper')
 
 beforeEach(async () => {
   await Blog.deleteMany({})
   await Blog.insertMany(helper.initialBlogs)
+
+  const newUser = {
+    'username': 'pope',
+    'name': 'Popsi Panda',
+    'password': 'bambu' 
+  }
+
+  await api
+    .post('/api/users')
+    .send(newUser)
+
 })
+
+
 
 test('Correct number of blogs is returned', async () => {
   const response = await api.get('/api/blogs')
@@ -28,7 +42,19 @@ test('Id is stored in field \'id\'', async () => {
 })
 
 
-test('Blog with the correct title is in collection after post', async () => {
+test.only('Blog with the correct title is in collection after post', async () => {
+
+  
+  const response = await api
+    .post('/api/login')
+    .send(
+      {
+        'username': 'pope',
+        'password': 'bambu'
+      })
+  
+  console.log(response.body)
+
   const newBlog = {
     title: 'Villen Blogi',
     author: 'Ville Saari',
@@ -39,7 +65,8 @@ test('Blog with the correct title is in collection after post', async () => {
   await api
     .post('/api/blogs')
     .send(newBlog)
-    .expect(201)
+    .set('Authorization', `bearer ${response.body.token}`)
+    .expect(201) 
     .expect('Content-Type', /application\/json/)
   
 

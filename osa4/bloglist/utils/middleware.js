@@ -1,4 +1,5 @@
 const logger = require('./logger')
+const jwt = require('jsonwebtoken')
 
 const errorHandler = (error, request, response, next) => {
   logger.error(error.message)
@@ -13,19 +14,24 @@ const errorHandler = (error, request, response, next) => {
 }
 
 const tokenExtractor = (request, response, next) => {
-  // tokenin ekstraktoiva koodi
-
   response.token = ''
   const authorization = request.get('authorization')
   if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    response.token =  authorization.substring(7)
+    request.token =  authorization.substring(7)
   }
-  
+  next()
+}
+
+const userExtractor = (request, response, next) => {
+  const token = request.token
+  const decodedToken = jwt.verify(token, process.env.SECRET)
+  request.user = decodedToken
   next()
 }
 
 module.exports = 
 {
   errorHandler,
-  tokenExtractor
+  tokenExtractor,
+  userExtractor
 }
