@@ -18,6 +18,7 @@ blogsRouter.post('/', async (request, response) => {
   if (!token || !request.user.id) {
     return response.status(401).json({ error: 'token missing or invalid' })
   }
+
   const user = await User.findById(request.user.id)
 
   if(body.title === undefined || body.url === undefined)
@@ -48,15 +49,17 @@ blogsRouter.delete('/:id', async (request, response) => {
 
   const token = request.token
 
-  const blogToRemove = await Blog.findByIdAndRemove(request.params.id)
+  const blogToRemove = await Blog.findById(request.params.id)
 
   if (!token || !request.user.id) {
     return response.status(401).json({ error: 'token missing or invalid' })
-  } else if (!(request.user.id.toString() === blogToRemove.id.toString())) {
+  } else if (!(request.user.id.toString() === blogToRemove.user._id.toString())) {
     return response.status(401).json({ error: 'Blog can only be removed by the user who added it' })
   }
 
   await Blog.findByIdAndRemove(request.params.id)
+
+
   response.status(204).end()
 })
 
